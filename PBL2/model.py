@@ -108,7 +108,7 @@ V_L = sol[:,7]  # Lymph Virion
 plt.figure(1)
 
 plt.subplot(1,3,1)
-plt.plot(t, V_B)
+plt.plot(t, V_B,'g-')
 plt.ylabel('Virions')
 
 
@@ -116,7 +116,6 @@ plt.subplot(1,3,2)
 plt.plot(t,T_B,'k-')
 plt.plot(t,T_Bx,'r-')
 plt.legend(['Healthy T','Infected T'])
-
 
 plt.show()
 plt.figure(2)
