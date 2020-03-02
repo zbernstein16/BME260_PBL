@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 
 Volume = 5  # Liters
 
-
-# test
 ####### Blood #######
 
 #Healthy T Cell properties
@@ -34,6 +32,8 @@ rho_V = 34  # viruses produced per infected cell
 c_1 = 3.083e9  # michaelsen menton virions half saturation
 
 ####### Lymph #######
+
+#test 3
 
 #Healthy T Cell properties
 lambda_T_L = 50*lambda_T_B
