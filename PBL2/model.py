@@ -34,6 +34,8 @@ c_1 = 3.083e9  # michaelsen menton virions half saturation
 
 ####### Lymph #######
 
+#test 3
+
 #Healthy T Cell properties
 lambda_T_L = 50*lambda_T_B
 T_L_0 = lambda_T_L/d_T
