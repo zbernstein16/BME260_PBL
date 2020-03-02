@@ -47,6 +47,8 @@ V_L_0 = 0
 
 def model(X, t):
 
+    ## Get current state values
+
     # Blood Variables
     T_B = X[0] # Healthy Blood CD4 T
     T_Bx = X[1] # Infected Blood CD4 T
@@ -57,6 +59,8 @@ def model(X, t):
     T_L = X[5] # Healthy lymph CD4 T
     T_Lx = X[6] # Infected Lymph CD4 T
     V_L = X[7] # Lymph Virion
+
+    ## Update States
 
     # Blood Variables
     dT_B = lambda_T_B - d_T*T_B - sig_BL*T_B + sig_LB*T_L
