@@ -119,7 +119,7 @@ def model(X,t):
     dT_L =  lambda_T_L - d_T*T_L + sig_BL*T_B - sig_LB*T_L - k_T*V_L*T_L
             #Infection - Inf Death
     dT_Lx = k_T*V_L*T_L - d_Tx*T_Lx
-            #V from inf T  nat V Death
+            #V from inf T  nat V Death 
     dV_L = rho_T_Lx*T_Lx - d_V*V_L
 
     return [dT_B,
