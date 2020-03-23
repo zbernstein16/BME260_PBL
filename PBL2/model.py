@@ -14,7 +14,7 @@ Volume = 5  # Liters. Total Blood volume
 
 ## Healthy
 d_T = 0.01 # Death Rate [1/day]
-k_T = 4.8e-12 # T infection Rate [1/virion-day]
+k_T = 2.4e-10 # T infection Rate [1/virion-day]
 
 ## Infected
 d_Tx = 1 # Death Rate [1/day]
@@ -67,7 +67,7 @@ d_Mx = 0.087  # 1/day Infected monocyte death rate
 ##########  Overall
 d_V = 3  # 1/day Virus natural death rate
 rho_V = 34  # viruses produced per infected cell
-c_1 = 3.083e9  # michaelsen menton virions half saturation
+c_1 = 3.083e9  # michaelis menton virions half saturation
 
 ##########  Blood
 V_B_0 = 1
@@ -134,7 +134,7 @@ def model(X,t):
 #%%
 ################################ Simulation ################################
 x0 = [T_B_0,T_Bx_0,M_B_0,M_Bx_0,V_B_0,T_L_0,T_Lx_0,V_L_0]
-t = np.linspace(0,100,1e3)
+t = np.linspace(0,500,5e3)
 sol,info = odeint(model, x0, t,full_output=True)
 
 # Blood Variables
