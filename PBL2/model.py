@@ -15,7 +15,7 @@ Volume = 5  # Liters
 
 ## Healthy
 d_T = 0.01 # Death Rate [1/day]
-k_T = 4.8e-12 # T infection Rate [1/virion-day]
+k_T = 2.4e-8 # T infection Rate [1/virion-day]
 
 ## Infected
 d_Tx = 1 # Death Rate [1/day]
@@ -25,7 +25,7 @@ d_Tx = 1 # Death Rate [1/day]
 ## Healthy
 T_B_0 = 1e6 # Initial blood T cell count [cell/mL]
 lambda_T_B = d_T*T_B_0 # [cell/mL/day] Gen. of blood T cell (from Steady state of dT_B/dt = lambda_T_B - d_T * T_B_0 = 0)
-sig_BL = 0.01 # Blood to lymph T cell transfer [1/day]
+sig_1 = 0.01 # Blood to lymph T cell transfer [1/day]
 
 ## Infected
 T_Bx_0 = 0
@@ -37,7 +37,7 @@ rho_T_Bx = 2.0e-3 # Blood T cell virus production [virion/cell/day]
 ## Healthy
 lambda_T_L = 50*lambda_T_B # Gen. of lymph T cell [cell/mL/day]
 T_L_0 = lambda_T_L/d_T # Initial lymph T cell count  [cell/mL]
-sig_LB = .0002
+sig_2 = .0002
 
 ## Infected
 T_Lx_0 = 0
@@ -61,16 +61,15 @@ d_Mx = 0.087  # 1/day Infected monocyte death rate
 
 
 ##########  Overall
-d_V = 3  # 1/day Virus natural death rate
-rho_V = 34  # viruses produced per infected cell
-c_1 = 3.083e9  # michaelsen menton virions half saturation
+d_V = 23  # 1/day Virus natural death rate
 
 ##########  Blood
-V_B_0 = 1
+V_B_0 = 1e-3
+D_1 = 0.1
 
 ##########  Lymph
-
-V_L_0 = 1
+V_L_0 = 0
+D_2 = 0.2
 
 
 
@@ -98,15 +97,15 @@ def model(X,t):
     ## Update States
 
     # Blood Variables
-    dT_B = lambda_T_B - d_T*T_B - sig_BL*T_B + sig_LB*T_L - k_T*V_B*T_B
+    dT_B = lambda_T_B - d_T*T_B - k_T*V_B*T_B - sig_1*T_B + sig_2*T_L
     dT_Bx = k_T*V_B*T_B - d_Tx*T_Bx
     dM_B = 0
     dM_Bx =  0
-    dV_B = rho_T_Bx*T_Bx - d_V*V_B
+    dV_B = rho_T_Bx*T_Bx - d_V*V_B + D_1*(V_L - V_B)
     # Lymph Variables
-    dT_L =  lambda_T_L - d_T*T_L + sig_BL*T_B - sig_LB*T_L - k_T*V_L*T_L
+    dT_L =  lambda_T_L - d_T*T_L - k_T*V_L*T_L + sig_1*T_B - sig_2*T_L
     dT_Lx = k_T*V_L*T_L - d_Tx*T_Lx
-    dV_L = rho_T_Lx*T_Lx - d_V*V_L
+    dV_L = .05*rho_T_Lx*T_Lx - d_V*V_L + D_2*(V_B - V_L)
 
     return [dT_B,
     dT_Bx,
@@ -120,7 +119,7 @@ def model(X,t):
 
 ################################ Simulation ################################
 x0 = [T_B_0,T_Bx_0,M_B_0,M_Bx_0,V_B_0,T_L_0,T_Lx_0,V_L_0]
-t = np.linspace(0,8,1e3)
+t = np.linspace(0,365*3,1e3)
 sol,info = odeint(model, x0, t,full_output=True)
 
 # Blood Variables
@@ -137,11 +136,11 @@ V_L = sol[:,7]  # Lymph Virion
 ################################ Plotting ################################
 plt.figure(1)
 
-plt.subplot(1,3,1)
+plt.subplot(1,2,1)
 plt.plot(t, V_B,'g-')
 plt.ylabel('Virions')
 
-plt.subplot(1,3,2)
+plt.subplot(1,2,2)
 plt.plot(t,T_B,'k-')
 plt.plot(t,T_Bx,'r-')
 plt.legend(['Healthy T','Infected T'])
@@ -151,11 +150,11 @@ plt.show()
 
 plt.figure(2)
 
-plt.subplot(1,3,1)
+plt.subplot(1,2,1)
 plt.plot(t, V_L,'g-')
 plt.ylabel('Virions')
 
-plt.subplot(1,3,2)
+plt.subplot(1,2,2)
 plt.plot(t,T_L,'k-')
 plt.plot(t,T_Lx,'r-')
 plt.legend(['Healthy T','Infected T'])
