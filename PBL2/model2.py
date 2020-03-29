@@ -15,6 +15,10 @@ import matplotlib.pyplot as plt
 # C :
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5502436/
 
+# Physiological Properties
+Vol_CNS = 1273.6 + 150 # mL
+Vol_blood = 5000 # mL
+
 # Initial Conditions
 #TODO: Changing these breaks model, but is technically correct... unclear
 T_B_0 = 1e6 #  cells/mL (B)
@@ -27,6 +31,11 @@ V2_0 = 1e-6
 C_0 = 0
 M_B_0 = 1e5 # Monocytes in Blood [cell/mL] (A)
 M_Bx_0 = 0
+M_CNSx_0 = 0
+G_CNS_0 = .05*(1.7e9+100e9)/Vol_CNS # [cell/mL]
+G_CNSx_0 = 0
+V_CNS_0 = 0
+
 
 ############# Overall
 k_T = 8e-9# Fit, OLD: 2.4e-8 # T cell Infection rate (B)
@@ -37,6 +46,7 @@ d_M = np.log(2)/1 # Death rate of healthy monocytes [day^-1] (C, gives half-life
 d_Mx = 0.087 # (A)
 d_C = 6.6 # Decay rate of cytok_Tine (B)
 d_V = 23 # Death rate of virus (B)
+
 
 ############# Blood
 
@@ -67,6 +77,7 @@ sig_2 = .0002
 
 
 f = .95
+p_MB = 34 # Monocyte Virus production rate [particles/cell/day]
 p_v1 = 1000
 D_1 = .1
 p_v2 = 2000
@@ -92,6 +103,12 @@ def model(X,t):
     C = X[7]  #Cytokine
     M_B = X[8] #Monocytes in Blood
     M_Bx = X[9] #Inf blood monocytes
+    M_CNSx = X[10]
+    G_CNS = X[11]
+    G_CNSx = X[12]
+    V_CNS = X[13]
+
+
     
     k_Tenh = k_T * (1+t/2000) # ENHANCED
     #      CD4 GEN   Virus->Inf  Nat Death      Pyroptosis Attr    Lymph->Blood
@@ -101,14 +118,14 @@ def model(X,t):
     dT_Bx = k_Tenh*V1*T_B - d_Tprodx*T_Bx
     
     #Blood
-    #   Viral Prod.    Viral Death    Transfer Rate
-    dV1 = p_v1 * T_Bx - d_V * V1 + D_1 * (V2 - V1)
+    #   Viral Prod  T. Prod. M   Viral Death    Transfer Rate
+    dV1 = p_v1 * T_Bx + p_MB*M_Bx - d_V * V1 + D_1 * (V2 - V1)
     
     #     Mono GEN   Nat Death   Bl -> CNS     Virus-> Inf
     dM_B = lam_M_B - d_M*M_B - D_MB2CNS*M_B - k_M*V1*M_B
     
-    #        Virus->Inf    Inf Death
-    dM_Bx = k_M*V1*M_B - d_Mx*M_Bx
+    #        Virus->Inf    Inf Death    Leaving
+    dM_Bx = k_M*V1*M_B - d_Mx*M_Bx - D_MB2CNS*M_Bx
     
     #      CD4 GEN     Pyroptosis Attraction            Virus->Inf    Lymph->Blood   Nat Death
     dT_L = lam_T_L + sig_1 * (1 + cytoGamma(C) * C) * T_B - k_Tenh * V2 * T_L - sig_2 * T_L - d_T * T_L
@@ -128,7 +145,14 @@ def model(X,t):
     #     #C * death * #abortive    Cyto Death             
     dC = N_C*d_Tabortx*T_Labortx - d_C*C
 
-    return [dT_B,dT_L,dT_Bx,dT_Lprodx,dT_Labortx,dV1,dV2,dC,dM_B,dM_Bx]
+
+    # CNS
+    dM_CNSx = D_MB2CNS*M_Bx*Vol_blood/Vol_CNS - d_Mx*M_CNSx
+    dG_CNS = -k_M*G_CNS*V_CNS
+    dG_CNSx = k_M*G_CNS*V_CNS - d_Mx * M_CNSx
+    dV_CNS = p_MB*M_CNSx
+
+    return [dT_B,dT_L,dT_Bx,dT_Lprodx,dT_Labortx,dV1,dV2,dC,dM_B,dM_Bx,dM_CNSx,dG_CNS,dG_CNSx,dV_CNS]
 
 
 ### Simulation
@@ -142,7 +166,13 @@ V1_0,
 V2_0,
 C_0,
 M_B_0,
-M_Bx_0]
+M_Bx_0,
+M_CNSx_0,
+G_CNS_0,
+G_CNSx_0,
+V_CNS_0]
+
+
 
 t = np.linspace(0,365*10,1e5)
 sol,info = odeint(model, x0, t,full_output=True)
@@ -158,7 +188,10 @@ V2 = sol[:,6]
 C = sol[:,7]
 M_B = sol[:,8]
 M_Bx = sol[:,9]
-
+M_CNSx = sol[:,10]
+G_CNS = sol[:,11]
+G_CNSx = sol[:,12]
+V_CNS = sol[:,13]
 
 plt.figure(1)
 plt.title("Blood T Cells")
@@ -193,7 +226,19 @@ plt.figure(4)
 plt.title("Virions")
 plt.plot(t,V1,'k-')
 plt.plot(t,V2,'b-')
+plt.plot(t,V_CNS,'m-')
 
-plt.legend(["Blood","Lymph"])
+plt.legend(["Blood","Lymph","Brain"])
+plt.yscale("log")
+plt.show()
+
+
+# Monocytes in Brain
+plt.figure(5)
+plt.title("Monocytes in Brain")
+plt.plot(t,M_CNSx)
+plt.plot(t,G_CNSx)
+plt.plot(t,G_CNS)
+plt.legend(["Infected Monocytes","infected microglia","healthy microglia"])
 plt.yscale("log")
 plt.show()
