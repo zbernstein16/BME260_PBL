@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 
 # Initial Conditions
 #TODO: Changing these breaks model, but is technically correct... unclear
-T_B_0 = 1e6 # 1e6 cells / uL -> 1e9 cells/mL
-T_L_0 = 5e7 # 5e7 cells/ uL -> 5e10 cells/mL
+T_B_0 = 1e6 #  cells/mL (B)
+T_L_0 = 5e7 #  cells/mL (B)
 T_Bx_0 = 0
 T_Lprodx_0 = 0
 T_Labortx_0 = 0
@@ -51,12 +51,12 @@ lam_M_B = d_M*M_B_0 + D_MB2CNS*M_B_0
 
 # T Cell
 lam_T_L = 5e5 # ORIG 5e5, 50x blood
-d_Tabortx = 0.01 #ORIG 0.0001 Death rate of latently infected T cells (B)
+d_Tabortx = 0.001 #ORIG 0.001 Death rate of latently infected T cells (B)
                  #CHANGED to 0.01. Should be same as death of health or greater
 
 ############# CNS
 
-alpha_abort2prod = .0005 # Conversion of latently infected to productively
+alpha_abort2prod = .0001 # Conversion of latently infected to productively
 alpha_prod2abort = alpha_abort2prod/100 # Conversion of productively infected to latent
 
 
@@ -75,10 +75,10 @@ N_C = 15
 
 def cytoGamma(C):
     #All from Source (B)
-    threshhold = 2000#molecules/mL
+    threshhold = 4000#molecules/mL
     if C < threshhold:
         return 0    
-    return 2e-4 #mL/molecule
+    return gam_r #mL/molecule
 
 
 def model(X,t):
@@ -144,7 +144,7 @@ C_0,
 M_B_0,
 M_Bx_0]
 
-t = np.linspace(0,1000,1e5)
+t = np.linspace(0,365*10,1e5)
 sol,info = odeint(model, x0, t,full_output=True)
 
 
@@ -163,9 +163,9 @@ M_Bx = sol[:,9]
 plt.figure(1)
 plt.title("Blood T Cells")
 plt.plot(t,T_B,'k-')
-plt.plot(t,T_Bx,'r--')
+#plt.plot(t,T_Bx,'r--')
 
-plt.legend(['Healthy','Infected'])
+plt.legend(['Healthy'])
 plt.yscale("log")
 plt.show()
 
