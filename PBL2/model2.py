@@ -29,7 +29,7 @@ M_B_0 = 1e5 # Monocytes in Blood [cell/mL] (A)
 M_Bx_0 = 0
 
 ############# Overall
-k_T = 2.4e-8 # T cell Infection rate (B)
+k_T = 8e-9# Fit, OLD: 2.4e-8 # T cell Infection rate (B)
 k_M = k_T*(1.19/.089) # Monocyte Infection rate (A)
 d_T = 0.01 # Death rate of healthy T cell (B). Model EXTREMELY sensitive to this
 d_Tprodx = 1 # Death rate of productively infected T Cells (B)
@@ -51,7 +51,7 @@ lam_M_B = d_M*M_B_0 + D_MB2CNS*M_B_0
 
 # T Cell
 lam_T_L = 5e5 # ORIG 5e5, 50x blood
-d_Tabortx = 0.001 #ORIG 0.001 Death rate of latently infected T cells (B)
+d_Tabortx = 0.01 #ORIG 0.001 Death rate of latently infected T cells (B)
                  #CHANGED to 0.01. Should be same as death of health or greater
 
 ############# CNS
@@ -93,12 +93,12 @@ def model(X,t):
     M_B = X[8] #Monocytes in Blood
     M_Bx = X[9] #Inf blood monocytes
     
-    
+    k_Tenh = k_T * (1+t/2000) # ENHANCED
     #      CD4 GEN   Virus->Inf  Nat Death      Pyroptosis Attr    Lymph->Blood
-    dT_B = lam_T_B - k_T*V1*T_B -d_T*T_B - sig_1*(1+cytoGamma(C)*C)*T_B + sig_2*T_L
+    dT_B = lam_T_B - k_Tenh*V1*T_B -d_T*T_B - sig_1*(1+cytoGamma(C)*C)*T_B + sig_2*T_L
    
     #       Virus->Inf   DeathInf (100x natural)  
-    dT_Bx = k_T*V1*T_B - d_Tprodx*T_Bx
+    dT_Bx = k_Tenh*V1*T_B - d_Tprodx*T_Bx
     
     #Blood
     #   Viral Prod.    Viral Death    Transfer Rate
@@ -111,13 +111,13 @@ def model(X,t):
     dM_Bx = k_M*V1*M_B - d_Mx*M_Bx
     
     #      CD4 GEN     Pyroptosis Attraction            Virus->Inf    Lymph->Blood   Nat Death
-    dT_L = lam_T_L + sig_1 * (1 + cytoGamma(C) * C) * T_B - k_T * V2 * T_L - sig_2 * T_L - d_T * T_L
+    dT_L = lam_T_L + sig_1 * (1 + cytoGamma(C) * C) * T_B - k_Tenh * V2 * T_L - sig_2 * T_L - d_T * T_L
     
     #               prod. Gen           prod. death
-    dT_Lprodx = (1-f)*k_T*V2*T_L - d_Tprodx*T_Lprodx
+    dT_Lprodx = (1-f)*k_Tenh*V2*T_L - d_Tprodx*T_Lprodx
     
     #               abort Gen          abort death
-    dT_Labortx = f*k_T*V2*T_L - d_Tabortx*T_Labortx
+    dT_Labortx = f*k_Tenh*V2*T_L - d_Tabortx*T_Labortx
     
     #Notice that prod. + abort GEN = total Inf GEN
     #TODO Try estimating productive and abortive as constant ratio
