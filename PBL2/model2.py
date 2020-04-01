@@ -23,7 +23,6 @@ Vol_CNS = 1273.6 + 150 # mL
 Vol_blood = 5000 # mL
 
 # Initial Conditions
-#TODO: Changing these breaks model, but is technically correct... unclear
 T_B_0 = 1e6 #  cells/mL (B)
 T_L_0 = 5e7 #  cells/mL (B)
 T_Bx_0 = 0
@@ -140,9 +139,6 @@ def model(X,t):
     #               abort Gen          abort death
     dT_Labortx = f*k_Tenh*V2*T_L - d_Tabortx*T_Labortx
     
-    #Notice that prod. + abort GEN = total Inf GEN
-    #TODO Try estimating productive and abortive as constant ratio
-    
     #     Prod.Cell     Vir death   virus Transfer?
     dV2 = p_v2*T_Lprodx - d_V*V2 + D_2*(V1 - V2)
     
@@ -179,6 +175,9 @@ V_CNS_0]
 
 
 t = np.linspace(0,365*10,1e5)
+aids = []
+for ts in t:
+    aids.append(200000)
 sol,info = odeint(model, x0, t,full_output=True)
 
 
@@ -197,23 +196,32 @@ G_CNS = sol[:,11]
 G_CNSx = sol[:,12]
 V_CNS = sol[:,13]
 
-plt.figure(1)
-plt.title("Blood T Cells")
-plt.plot(t,T_B,'k-')
-#plt.plot(t,T_Bx,'r--')
+axes_size = "15"
+plt.figure(0).clf()
+fig0, ax0 = plt.subplots(num=0,clear=True)
+ax0.plot(t/365, T_B, 'k-', label = "Healthy")
+ax0.plot(t/365, aids, 'r--', label = "AIDS Threshold")
+ax0.set_xlabel("Time (Years)", size = axes_size)
+ax0.set_ylabel("Concentration (Cells/mL)", size = axes_size)
+ax0.set_title("CD4 Concentration in the Blood")
+plt.xticks(np.arange(0,11,1))
+ax0.legend(loc = "upper right")
+fig0.tight_layout()
+fig0.savefig("CD4_Blood")
 
-plt.legend(['Healthy'])
-plt.yscale("log")
-plt.show()
 
-plt.figure(2)
-plt.title("Lymph T Cells")
-plt.plot(t,T_L,'k-')
-plt.plot(t,T_Lprodx,'r-')
-plt.plot(t,T_Labortx,'b-')
 
-plt.legend(['T Lymph','T product','T abortive'])
-plt.show()
+plt.figure(1).clf()
+fig1, ax1 = plt.subplots(num=1,clear=True)
+ax1.plot(t/365,T_L,'k-')
+ax1.plot(t/365,T_Lprodx,'r-')
+ax1.plot(t/365,T_Labortx,'b-')
+ax1.set_xlabel("Time (Years)", size = axes_size)
+ax1.set_ylabel("Concentration (Cells/mL)", size = axes_size)
+ax1.set_title("CD4 Concentration in Lymph")
+ax1.legend(['T Lymph','T product','T abortive'], loc = "upper center", prop={"size":15})
+fig1.savefig("CD4_Lymph")
+
 
 # Blood monocytes
 #plt.figure(3)
@@ -231,10 +239,11 @@ plt.title("Virions")
 plt.plot(t,V1,'k-')
 plt.plot(t,V2,'b-')
 plt.plot(t,V_CNS,'m-')
-
 plt.legend(["Blood","Lymph","Brain"])
 plt.yscale("log")
 plt.show()
+plt.savefig("Virions.png")
+
 
 
 # Monocytes in Brain
@@ -245,106 +254,108 @@ plt.plot(t,G_CNSx)
 plt.plot(t,G_CNS)
 plt.legend(["Infected Monocytes","infected microglia","healthy microglia"])
 plt.show()
+plt.savefig("Monocytes in Brain.png")
 
 
 
 
 
-###### Parameter variation Tests
-# Some colors to use
-Ncolors = 21
 
-rmap = cm.get_cmap('Reds', Ncolors)
-reds = rmap(np.linspace(0, 1, Ncolors))
-
-bmap = cm.get_cmap('Blues', Ncolors)
-blues = bmap(np.linspace(0, 1, Ncolors))
-
-gmap = cm.get_cmap('Greens', Ncolors)
-greens = gmap(np.linspace(0, 1, Ncolors))
-
-
-## e.g. using blues
-# plt.figure(100)
-# x = np.linspace(1,10)
-# k_test = np.linspace(10,20) # some parameter we are going to vary to plot
-# norm = mpl.colors.Normalize(vmin=k_test.min(),vmax=k_test.max())
-# cmap = mpl.cm.ScalarMappable(norm=norm, cmap=bmap)
-# cmap.set_array([])
-# fig, ax = plt.subplots(figsize=(6, 6))
-# for indx,k in enumerate(np.linspace(1,5,Ncolors)):
-#     y = k*(x**2)
-#     ax.plot(x,y,c=blues[indx])
+####### Parameter variation Tests
+## Some colors to use
+#Ncolors = 21
 #
-# fig.colorbar(cmap, ticks=k_test[::5])
-# fig.show()
-
-def model_varyparam(X,t,param):
-
-    global k_G # change this to the parameter you are varying
-    k_G = param # change LHS
-    return model(X,t)
-
-param_values = np.linspace(1e-9,1e-8,Ncolors)
-norm = mpl.colors.Normalize(vmin=param_values.min(),vmax=param_values.max())
-
-figA,axA=plt.subplots()
-for indx,param in enumerate(param_values):
-    t = np.linspace(0,365*10,1e5)
-    sol,info = odeint(model_varyparam, x0, t,full_output=True,args=(param,))
-
-
-    T_B = sol[:,0]
-    T_L = sol[:,1]
-    T_Bx = sol[:,2]
-    T_Lprodx = sol[:,3]
-    T_Labortx = sol[:,4]
-    V1 = sol[:,5]
-    V2 = sol[:,6]
-    C = sol[:,7]
-    M_B = sol[:,8]
-    M_Bx = sol[:,9]
-    M_CNSx = sol[:,10]
-    G_CNS = sol[:,11]
-    G_CNSx = sol[:,12]
-    V_CNS = sol[:,13]
-
-
-    axA.plot(t, G_CNS, c=greens[indx])
-    axA.plot(t,G_CNSx,c=reds[indx])
-
-# Creating fake legend items
-red_line = mpl.lines.Line2D([0], [0], color=rmap(.6), lw=4)
-blue_line =  mpl.lines.Line2D([0], [0], color=bmap(.6), lw=4)
-green_line = mpl.lines.Line2D([0], [0], color=gmap(.6), lw=4)
-
-
-## Setting up figure A
-
-axA.set_yscale("log")
-axA.set_ylim([1e1,1e7])
-# Fake legends
-axA.legend([green_line,red_line],['Healthy Microglia','Infected Microglia'])
-# Set colorbar for figure A
-colormap4colorbar = rmap # use red as most useful
-cmap = mpl.cm.ScalarMappable(norm=norm, cmap=colormap4colorbar)
-cmap.set_array([])
-
-param_values2label = param_values[0:Ncolors:4] # maybe too many labels, so this just chooses a selection of them
-cbar = figA.colorbar(cmap,label="k_G",ticks=param_values2label)
-cbar.ax.set_yticklabels(["{:.2e}".format(x) for x in param_values2label])
-
-
-axA.set_title("Microglia")
-
-
-## Setting up figure B
-
-
-
-
-figA.show()
-figB.show()
+#rmap = cm.get_cmap('Reds', Ncolors)
+#reds = rmap(np.linspace(0, 1, Ncolors))
+#
+#bmap = cm.get_cmap('Blues', Ncolors)
+#blues = bmap(np.linspace(0, 1, Ncolors))
+#
+#gmap = cm.get_cmap('Greens', Ncolors)
+#greens = gmap(np.linspace(0, 1, Ncolors))
+#
+#
+### e.g. using blues
+## plt.figure(100)
+## x = np.linspace(1,10)
+## k_test = np.linspace(10,20) # some parameter we are going to vary to plot
+## norm = mpl.colors.Normalize(vmin=k_test.min(),vmax=k_test.max())
+## cmap = mpl.cm.ScalarMappable(norm=norm, cmap=bmap)
+## cmap.set_array([])
+## fig, ax = plt.subplots(figsize=(6, 6))
+## for indx,k in enumerate(np.linspace(1,5,Ncolors)):
+##     y = k*(x**2)
+##     ax.plot(x,y,c=blues[indx])
+##
+## fig.colorbar(cmap, ticks=k_test[::5])
+## fig.show()
+#
+#def model_varyparam(X,t,param):
+#
+#    global k_G # change this to the parameter you are varying
+#    k_G = param # change LHS
+#    return model(X,t)
+#
+#param_values = np.linspace(1e-9,1e-8,Ncolors)
+#norm = mpl.colors.Normalize(vmin=param_values.min(),vmax=param_values.max())
+#
+#figA,axA=plt.subplots()
+#for indx,param in enumerate(param_values):
+#    t = np.linspace(0,365*10,1e5)
+#    sol,info = odeint(model_varyparam, x0, t,full_output=True,args=(param,))
+#
+#
+#    T_B = sol[:,0]
+#    T_L = sol[:,1]
+#    T_Bx = sol[:,2]
+#    T_Lprodx = sol[:,3]
+#    T_Labortx = sol[:,4]
+#    V1 = sol[:,5]
+#    V2 = sol[:,6]
+#    C = sol[:,7]
+#    M_B = sol[:,8]
+#    M_Bx = sol[:,9]
+#    M_CNSx = sol[:,10]
+#    G_CNS = sol[:,11]
+#    G_CNSx = sol[:,12]
+#    V_CNS = sol[:,13]
+#
+#
+#    axA.plot(t, G_CNS, c=greens[indx])
+#    axA.plot(t,G_CNSx,c=reds[indx])
+#
+## Creating fake legend items
+#red_line = mpl.lines.Line2D([0], [0], color=rmap(.6), lw=4)
+#blue_line =  mpl.lines.Line2D([0], [0], color=bmap(.6), lw=4)
+#green_line = mpl.lines.Line2D([0], [0], color=gmap(.6), lw=4)
+#
+#
+### Setting up figure A
+#
+#axA.set_yscale("log")
+#axA.set_ylim([1e1,1e7])
+## Fake legends
+#axA.legend([green_line,red_line],['Healthy Microglia','Infected Microglia'])
+## Set colorbar for figure A
+#colormap4colorbar = rmap # use red as most useful
+#cmap = mpl.cm.ScalarMappable(norm=norm, cmap=colormap4colorbar)
+#cmap.set_array([])
+#
+#param_values2label = param_values[0:Ncolors:4] # maybe too many labels, so this just chooses a selection of them
+#cbar = figA.colorbar(cmap,label="k_G",ticks=param_values2label)
+#cbar.ax.set_yticklabels(["{:.2e}".format(x) for x in param_values2label])
+#
+#
+#axA.set_title("Microglia")
+#
+#
+### Setting up figure B
+#
+#
+#
+#
+#figA.show()
+#figA.savefig("Spread Plot")
 
 
 
