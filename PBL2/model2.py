@@ -281,106 +281,106 @@ fig4.tight_layout()
 
 
 
-####### Parameter variation Tests
-## Some colors to use
-#Ncolors = 21
-#
-#rmap = cm.get_cmap('Reds', Ncolors)
-#reds = rmap(np.linspace(0, 1, Ncolors))
-#
-#bmap = cm.get_cmap('Blues', Ncolors)
-#blues = bmap(np.linspace(0, 1, Ncolors))
-#
-#gmap = cm.get_cmap('Greens', Ncolors)
-#greens = gmap(np.linspace(0, 1, Ncolors))
-#
-#
-### e.g. using blues
-## plt.figure(100)
-## x = np.linspace(1,10)
-## k_test = np.linspace(10,20) # some parameter we are going to vary to plot
-## norm = mpl.colors.Normalize(vmin=k_test.min(),vmax=k_test.max())
-## cmap = mpl.cm.ScalarMappable(norm=norm, cmap=bmap)
-## cmap.set_array([])
-## fig, ax = plt.subplots(figsize=(6, 6))
-## for indx,k in enumerate(np.linspace(1,5,Ncolors)):
-##     y = k*(x**2)
-##     ax.plot(x,y,c=blues[indx])
-##
-## fig.colorbar(cmap, ticks=k_test[::5])
-## fig.show()
-#
-#def model_varyparam(X,t,param):
-#
-#    global k_G # change this to the parameter you are varying
-#    k_G = param # change LHS
-#    return model(X,t)
-#
-#param_values = np.linspace(1e-9,1e-8,Ncolors)
-#norm = mpl.colors.Normalize(vmin=param_values.min(),vmax=param_values.max())
-#
-#figA,axA=plt.subplots()
-#for indx,param in enumerate(param_values):
-#    t = np.linspace(0,365*10,1e5)
-#    sol,info = odeint(model_varyparam, x0, t,full_output=True,args=(param,))
-#
-#
-#    T_B = sol[:,0]
-#    T_L = sol[:,1]
-#    T_Bx = sol[:,2]
-#    T_Lprodx = sol[:,3]
-#    T_Labortx = sol[:,4]
-#    V1 = sol[:,5]
-#    V2 = sol[:,6]
-#    C = sol[:,7]
-#    M_B = sol[:,8]
-#    M_Bx = sol[:,9]
-#    M_CNSx = sol[:,10]
-#    G_CNS = sol[:,11]
-#    G_CNSx = sol[:,12]
-#    V_CNS = sol[:,13]
-#
-#
-#    axA.plot(t, G_CNS, c=greens[indx])
-#    axA.plot(t,G_CNSx,c=reds[indx])
-#
-## Creating fake legend items
-#red_line = mpl.lines.Line2D([0], [0], color=rmap(.6), lw=4)
-#blue_line =  mpl.lines.Line2D([0], [0], color=bmap(.6), lw=4)
-#green_line = mpl.lines.Line2D([0], [0], color=gmap(.6), lw=4)
-#
-#
-### Setting up figure A
-#
-#axA.set_yscale("log")
-#axA.set_ylim([1e1,1e7])
-## Fake legends
-#axA.legend([green_line,red_line],['Healthy Microglia','Infected Microglia'])
-## Set colorbar for figure A
-#colormap4colorbar = rmap # use red as most useful
-#cmap = mpl.cm.ScalarMappable(norm=norm, cmap=colormap4colorbar)
-#cmap.set_array([])
-#
-#param_values2label = param_values[0:Ncolors:4] # maybe too many labels, so this just chooses a selection of them
-#cbar = figA.colorbar(cmap,label="k_G",ticks=param_values2label)
-#cbar.ax.set_yticklabels(["{:.2e}".format(x) for x in param_values2label])
-#
-#
-#axA.set_title("Microglia")
-#
-#
-### Setting up figure B
-#
-#
-#
-#
-#figA.show()
-#figA.savefig("Spread Plot")
+###### Parameter variation Tests
+# Some colors to use
+Ncolors = 5
 
-f= open("No_Pyroptosis.txt","w+")
-for num in range(45000, 100000):
-    f.write("{} {} {} {}\n".format(T_B, T_L, V1, G_CNS))
-f.close()
+rmap = cm.get_cmap('winter', Ncolors)
+reds = rmap(np.linspace(0, 1, Ncolors))
+
+bmap = cm.get_cmap('Blues', Ncolors)
+blues = bmap(np.linspace(0, 1, Ncolors))
+
+gmap = cm.get_cmap('Greens', Ncolors)
+greens = gmap(np.linspace(0, 1, Ncolors))
+
+
+## e.g. using blues
+# plt.figure(100)
+# x = np.linspace(1,10)
+# k_test = np.linspace(10,20) # some parameter we are going to vary to plot
+# norm = mpl.colors.Normalize(vmin=k_test.min(),vmax=k_test.max())
+# cmap = mpl.cm.ScalarMappable(norm=norm, cmap=bmap)
+# cmap.set_array([])
+# fig, ax = plt.subplots(figsize=(6, 6))
+# for indx,k in enumerate(np.linspace(1,5,Ncolors)):
+#     y = k*(x**2)
+#     ax.plot(x,y,c=blues[indx])
+#
+# fig.colorbar(cmap, ticks=k_test[::5])
+# fig.show()
+
+def model_varyparam(X,t,param):
+
+    global k_G # change this to the parameter you are varying
+    k_G = param # change LHS
+    return model(X,t)
+
+param_values = np.linspace(1e-9,1e-8,Ncolors)
+norm = mpl.colors.Normalize(vmin=param_values.min(),vmax=param_values.max())
+
+figA,axA=plt.subplots()
+for indx,param in enumerate(param_values):
+    t = np.linspace(0,365*10,1e5)
+    sol,info = odeint(model_varyparam, x0, t,full_output=True,args=(param,))
+
+
+    T_B = sol[:,0]
+    T_L = sol[:,1]
+    T_Bx = sol[:,2]
+    T_Lprodx = sol[:,3]
+    T_Labortx = sol[:,4]
+    V1 = sol[:,5]
+    V2 = sol[:,6]
+    C = sol[:,7]
+    M_B = sol[:,8]
+    M_Bx = sol[:,9]
+    M_CNSx = sol[:,10]
+    G_CNS = sol[:,11]
+    G_CNSx = sol[:,12]
+    V_CNS = sol[:,13]
+
+
+#    axA.plot(t, G_CNS, c=greens[indx])
+    axA.plot(t,G_CNSx,c=reds[indx])
+
+# Creating fake legend items
+red_line = mpl.lines.Line2D([0], [0], color=rmap(.6), lw=4)
+blue_line =  mpl.lines.Line2D([0], [0], color=bmap(.6), lw=4)
+green_line = mpl.lines.Line2D([0], [0], color=gmap(.6), lw=4)
+
+
+## Setting up figure A
+
+axA.set_yscale("log")
+axA.set_ylim([1e1,1e7])
+# Fake legends
+axA.legend([green_line,red_line],['Healthy Microglia','Infected Microglia'])
+# Set colorbar for figure A
+colormap4colorbar = rmap # use red as most useful
+cmap = mpl.cm.ScalarMappable(norm=norm, cmap=colormap4colorbar)
+cmap.set_array([])
+
+param_values2label = param_values[0:Ncolors:4] # maybe too many labels, so this just chooses a selection of them
+cbar = figA.colorbar(cmap,label="k_G",ticks=param_values2label)
+cbar.ax.set_yticklabels(["{:.2e}".format(x) for x in param_values2label])
+
+
+axA.set_title("Microglia")
+
+
+## Setting up figure B
+
+
+
+
+figA.show()
+figA.savefig("Spread Plot")
+
+#f= open("No_Pyroptosis.txt","w+")
+#for num in range(0, 100000):
+#    f.write("{} {} {} {}\n".format(T_B[num], T_L[num], V1[num], G_CNS[num]))
+#f.close()
 
 
 
