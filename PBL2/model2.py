@@ -207,7 +207,7 @@ ax0.set_title("CD4 Concentration in the Blood")
 plt.xticks(np.arange(0,11,1))
 ax0.legend(loc = "upper right")
 fig0.tight_layout()
-fig0.savefig("CD4_Blood")
+#fig0.savefig("CD4_Blood.png")
 
 
 
@@ -219,44 +219,64 @@ ax1.plot(t/365,T_Labortx,'b-')
 ax1.set_xlabel("Time (Years)", size = axes_size)
 ax1.set_ylabel("Concentration (Cells/mL)", size = axes_size)
 ax1.set_title("CD4 Concentration in Lymph")
-ax1.legend(['T Lymph','T product','T abortive'], loc = "upper center", prop={"size":15})
-fig1.savefig("CD4_Lymph")
+ax1.legend(['Healthy','Productively Inf.','Abortively Inf.'], loc = "upper center", prop={"size":15})
+fig1.tight_layout()
+#fig1.savefig("CD4_Lymph.png")
 
 
-# Blood monocytes
-#plt.figure(3)
-#plt.title("Blood Monocyte Profile")
-#
-#plt.plot(t,M_B,'k-')
-#plt.plot(t,M_Bx,'r-')
-#
-#plt.legend(['Healthy','Infected'])
-#plt.show()
+
+
+plt.figure(2).clf()
+fig2, ax2 = plt.subplots(num=2,clear=True)
+ax2.plot(t/365,M_B,'k-')
+ax2.plot(t/365,M_Bx,'r-')
+ax2.set_xlabel("Time (Years)", size = axes_size)
+ax2.set_ylabel("Concentration (Cells/mL)", size = axes_size)
+ax2.set_title("Monocyte Concentration in Blood")
+ax2.legend(['Healthy','Infected'], loc = "lower right", prop={"size":15})
+plt.yscale('log')
+fig2.tight_layout()
+#fig2.savefig("Monocyte_Blood.png")
+
+
+
+
 
 # Virus
-plt.figure(4)
-plt.title("Virions")
-plt.plot(t,V1,'k-')
-plt.plot(t,V2,'b-')
-plt.plot(t,V_CNS,'m-')
-plt.legend(["Blood","Lymph","Brain"])
+
+
+plt.figure(3).clf()
+fig3, ax3 = plt.subplots(num=3,clear=True)
+ax3.plot(t/365,V1,'k-')
+ax3.plot(t/365,V2,'r-')
+ax3.plot(t/365,V_CNS,'b-')
+ax3.set_xlabel("Time (Years)", size = axes_size)
+ax3.set_ylabel("Concentration (Cells/mL)", size = axes_size)
+ax3.set_title("Virus Concentrations")
 plt.yscale("log")
-plt.show()
-plt.savefig("Virions.png")
+ax3.legend(["Blood","Lymph","Brain"], prop={"size":15})
+fig3.tight_layout()
+#fig3.savefig("Virions.png")
+
+
 
 
 
 # Monocytes in Brain
-plt.figure(5)
-plt.title("Monocytes in Brain")
-plt.plot(t,M_CNSx)
-plt.plot(t,G_CNSx)
-plt.plot(t,G_CNS)
-plt.legend(["Infected Monocytes","infected microglia","healthy microglia"])
-plt.show()
-plt.savefig("Monocytes in Brain.png")
 
 
+plt.figure(4).clf()
+fig4, ax4 = plt.subplots(num=4,clear=True)
+ax4.plot(t/365,G_CNS,'k-')
+#ax4.plot(t/365,M_CNSx,'r-')
+ax4.plot(t/365,G_CNSx,'r-')
+ax4.set_xlabel("Time (Years)", size = axes_size)
+ax4.set_ylabel("Concentration (Cells/mL)", size = axes_size)
+ax4.set_title("HIV Infection in the Brain")
+#plt.yscale("log")
+plt.legend(["Healthy Microglia", "Infected Microglia"], prop={"size":15})
+fig4.tight_layout()
+#fig4.savefig("Monocyte_Brain.png")
 
 
 
@@ -357,7 +377,10 @@ plt.savefig("Monocytes in Brain.png")
 #figA.show()
 #figA.savefig("Spread Plot")
 
-
+f= open("No_Pyroptosis.txt","w+")
+for num in range(45000, 100000):
+    f.write("{} {} {} {}\n".format(T_B, T_L, V1, G_CNS))
+f.close()
 
 
 
